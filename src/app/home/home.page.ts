@@ -355,7 +355,7 @@ export class HomePage implements OnInit {
     const pInProgress = this.taskInProgressPercentage;
     const endCompleted = pCompleted;
     const endInProgress = pCompleted + pInProgress;
-    return "conic-gradient(#10b981 0% " + endCompleted + "%, #22d3ee " + endCompleted + "% " + endInProgress + "%, #cbd5e1 " + endInProgress + "% 100%)";
+    return "conic-gradient(#10b981 0% " + endCompleted + "%, #38bdf8 " + endCompleted + "% " + endInProgress + "%, #712662 " + endInProgress + "% 100%)";
   }
 
   get tasksByRole(): { role: string; count: number; percentage: number; color: string }[] {
@@ -368,7 +368,7 @@ export class HomePage implements OnInit {
     });
 
     const max = Math.max(...Object.values(counts), 1);
-    const colors = ['#0d9488', '#3b82f6', '#8b5cf6', '#ec4899', '#f59e0b', '#10b981'];
+    const colors = ['#712662', '#23345C', '#1A355E', '#9d3587', '#38bdf8', '#10b981'];
 
     return this.rolesList.map((r, i) => ({
       role: r,
@@ -381,13 +381,13 @@ export class HomePage implements OnInit {
   get projectProgressList(): { name: string; status: string; progress: number; participantsCount: number; color: string }[] {
     return this.projects.map((p, idx) => {
       let progress = 45;
-      let color = '#22d3ee';
+      let color = '#23345C';
       if (p.status === 'Finalizado') {
         progress = 100;
         color = '#10b981';
       } else if (p.status === 'En progreso') {
         progress = idx === 0 ? 80 : 50;
-        color = '#22d3ee';
+        color = '#712662';
       } else {
         progress = 25;
         color = '#f59e0b';
