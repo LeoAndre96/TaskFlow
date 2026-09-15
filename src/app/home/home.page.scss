@@ -386,7 +386,7 @@
 
 /* ================= DATA TABLE & CARDS ================= */
 .table-card {
-  background-color: #4a5260;
+  background-color: #5e6878;
   border: 1px solid rgba(148, 163, 184, 0.18);
   border-radius: 16px;
   overflow: hidden;
@@ -402,7 +402,7 @@
   text-align: left;
 
   thead {
-    background-color: #383e49;
+    background-color: #47505e;
     border-bottom: 1px solid rgba(148, 163, 184, 0.15);
 
     th {
@@ -565,7 +565,7 @@
   justify-content: space-between;
   align-items: center;
   padding: 1.15rem 1.5rem;
-  background-color: #383e49;
+  background-color: #47505e;
   border-top: 1px solid rgba(148, 163, 184, 0.12);
   border-radius: 0 0 16px 16px;
 }
@@ -1086,7 +1086,7 @@
   gap: 1.25rem;
   transition: all 0.2s ease;
   border-radius: 16px;
-  background-color: #4a5260;
+  background-color: #5e6878;
   border: 1px solid rgba(148, 163, 184, 0.18);
   box-shadow: 0 12px 30px rgba(2, 6, 23, 0.45);
   backdrop-filter: blur(16px);
@@ -1139,7 +1139,7 @@
 
 .kpi-label {
   font-size: 0.78rem;
-  color: #94a3b8;
+  color: #e2e8f0;
   font-weight: 700;
   letter-spacing: 0.05em;
   text-transform: uppercase;
@@ -1170,7 +1170,7 @@
 }
 
 .dashboard-chart-card {
-  background-color: #4a5260;
+  background-color: #5e6878;
   border: 1px solid rgba(148, 163, 184, 0.18);
   border-radius: 16px;
   padding: 1.5rem;
@@ -1205,7 +1205,7 @@
 
 .chart-card-subtitle {
   font-size: 0.78rem;
-  color: #94a3b8;
+  color: #e2e8f0;
   margin: 0.25rem 0 0 0;
 }
 
@@ -1261,7 +1261,7 @@
 .donut-chart-center {
   width: 98px;
   height: 98px;
-  background-color: #383e49;
+  background-color: #47505e;
   border-radius: 50%;
   display: flex;
   flex-direction: column;
@@ -1281,7 +1281,7 @@
 .donut-center-label {
   font-size: 0.65rem;
   font-weight: 700;
-  color: #94a3b8;
+  color: #e2e8f0;
   text-transform: uppercase;
   letter-spacing: 0.05em;
   margin-top: 0.2rem;
@@ -1324,7 +1324,7 @@
 
 .legend-sub {
   font-size: 0.72rem;
-  color: #94a3b8;
+  color: #e2e8f0;
 }
 
 .chart-card-footer-metric {
@@ -1398,7 +1398,7 @@
 }
 
 .project-progress-item {
-  background-color: #383e49;
+  background-color: #47505e;
   border: 1px solid rgba(148, 163, 184, 0.15);
   border-radius: 12px;
   padding: 1.15rem;
@@ -1502,7 +1502,7 @@
 }
 
 .modal-window {
-  background-color: #4a5260;
+  background-color: #5e6878;
   border: 1px solid rgba(148, 163, 184, 0.25);
   border-radius: 20px;
   width: 90%;
@@ -1703,7 +1703,7 @@
   }
 
   .kpi-card {
-    background-color: #4a5260;
+    background-color: #5e6878;
     border: 1px solid rgba(148, 163, 184, 0.2);
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.12);
 
@@ -1715,7 +1715,7 @@
   }
 
   .dashboard-chart-card {
-    background-color: #4a5260;
+    background-color: #5e6878;
     border: 1px solid rgba(148, 163, 184, 0.2);
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.12);
 
@@ -1726,7 +1726,7 @@
   }
 
   .donut-chart-center {
-    background-color: #383e49;
+    background-color: #47505e;
   }
 }
 
