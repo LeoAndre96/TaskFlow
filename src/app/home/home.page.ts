@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+﻿import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -18,7 +18,7 @@ import { Project } from '../models/project.model';
   imports: [CommonModule, FormsModule, IonContent]
 })
 export class HomePage implements OnInit {
-  currentView: 'users' | 'tasks' | 'projects' | 'dashboard' = 'users';
+  currentView: 'users' | 'tasks' | 'projects' | 'dashboard' = (typeof sessionStorage !== 'undefined' && sessionStorage.getItem('taskflow_active_view') as any) || 'dashboard';
   searchQuery: string = '';
   filterRole: string = 'all';
   filterStatus: string = 'all';
@@ -277,10 +277,32 @@ export class HomePage implements OnInit {
     }
   }
 
-  getParticipantList(participantIds: number[] = []): { name: string, role: string }[] {
+  getParticipantList(participantIds: number[] = []): { id: number; name: string; cleanName: string; role: string; initials: string; color: string }[] {
+    const roleColors: { [role: string]: string } = {
+      'Admin': '#0d9488',
+      'Product Owner': '#8b5cf6',
+      'Scrum Master': '#3b82f6',
+      'Lead Developer': '#0284c7',
+      'UX Designer': '#ec4899',
+      'QA Engineer': '#f59e0b'
+    };
+
     return this.users
       .filter(u => participantIds.includes(u.id || 0))
-      .map(u => ({ name: u.name, role: u.role }));
+      .map(u => {
+        const regex = new RegExp('\\s*' + u.role + '$', 'i');
+        const clean = u.name.replace(regex, '').trim() || u.name;
+        const parts = clean.split(/\s+/);
+        const initials = parts.length > 1 ? (parts[0][0] + parts[1][0]).toUpperCase() : clean.substring(0, 2).toUpperCase();
+        return {
+          id: u.id || 0,
+          name: u.name,
+          cleanName: clean,
+          role: u.role,
+          initials: initials,
+          color: roleColors[u.role] || '#64748b'
+        };
+      });
   }
 
   // ================= TOAST =================
@@ -311,4 +333,143 @@ export class HomePage implements OnInit {
   get tasksUnassignedCount(): number {
     return this.tasks.filter(t => t.status === 'Sin asignar').length;
   }
+
+  // ================= MÉTRICAS Y GRÁFICOS (DASHBOARD) =================
+  get taskCompletionPercentage(): number {
+    if (!this.tasks.length) return 0;
+    return Math.round((this.tasksCompletedCount / this.tasks.length) * 100);
+  }
+
+  get taskInProgressPercentage(): number {
+    if (!this.tasks.length) return 0;
+    return Math.round((this.tasksInProgressCount / this.tasks.length) * 100);
+  }
+
+  get taskUnassignedPercentage(): number {
+    if (!this.tasks.length) return 0;
+    return Math.max(0, 100 - this.taskCompletionPercentage - this.taskInProgressPercentage);
+  }
+
+  get donutChartConicStyle(): string {
+    const pCompleted = this.taskCompletionPercentage;
+    const pInProgress = this.taskInProgressPercentage;
+    const endCompleted = pCompleted;
+    const endInProgress = pCompleted + pInProgress;
+    return "conic-gradient(#10b981 0% " + endCompleted + "%, #3b82f6 " + endCompleted + "% " + endInProgress + "%, #cbd5e1 " + endInProgress + "% 100%)";
+  }
+
+  get tasksByRole(): { role: string; count: number; percentage: number; color: string }[] {
+    const counts: { [role: string]: number } = {};
+    this.rolesList.forEach(r => counts[r] = 0);
+    this.tasks.forEach(t => {
+      if (t.assignedUserRole && counts[t.assignedUserRole] !== undefined) {
+        counts[t.assignedUserRole]++;
+      }
+    });
+
+    const max = Math.max(...Object.values(counts), 1);
+    const colors = ['#0d9488', '#3b82f6', '#8b5cf6', '#ec4899', '#f59e0b', '#10b981'];
+
+    return this.rolesList.map((r, i) => ({
+      role: r,
+      count: counts[r] || 0,
+      percentage: Math.round(((counts[r] || 0) / max) * 100),
+      color: colors[i % colors.length]
+    }));
+  }
+
+  get projectProgressList(): { name: string; status: string; progress: number; participantsCount: number; color: string }[] {
+    return this.projects.map((p, idx) => {
+      let progress = 45;
+      let color = '#3b82f6';
+      if (p.status === 'Finalizado') {
+        progress = 100;
+        color = '#10b981';
+      } else if (p.status === 'En progreso') {
+        progress = idx === 0 ? 80 : 50;
+        color = '#0d9488';
+      } else {
+        progress = 25;
+        color = '#f59e0b';
+      }
+      return {
+        name: p.name,
+        status: p.status,
+        progress: progress,
+        participantsCount: p.participantIds?.length || 0,
+        color: color
+      };
+    });
+  }
+
+  getTaskAssigneeInfo(task: Task): { name: string; cleanName: string; role: string; initials: string; color: string } | null {
+    if (!task.assignedUserId && (!task.assignedUserName || task.assignedUserName === 'Sin asignar')) {
+      return null;
+    }
+    const role = task.assignedUserRole || this.getUserRole(task.assignedUserId) || '';
+    const rawName = task.assignedUserName || 'Usuario';
+    const regex = new RegExp('\\s*' + role + '$', 'i');
+    const clean = rawName.replace(regex, '').trim() || rawName;
+    const parts = clean.split(/\s+/);
+    const initials = parts.length > 1 ? (parts[0][0] + parts[1][0]).toUpperCase() : clean.substring(0, 2).toUpperCase();
+
+    const roleColors: { [role: string]: string } = {
+      'Admin': '#0d9488',
+      'Product Owner': '#8b5cf6',
+      'Scrum Master': '#3b82f6',
+      'Lead Developer': '#0284c7',
+      'UX Designer': '#ec4899',
+      'QA Engineer': '#f59e0b'
+    };
+
+    return {
+      name: rawName,
+      cleanName: clean,
+      role: role,
+      initials: initials,
+      color: roleColors[role] || '#64748b'
+    };
+  }
+
+
+  getUserTaskCount(userId?: number): number {
+    if (!userId) return 0;
+    return this.tasks.filter(t => t.assignedUserId === userId).length;
+  }
+
+  getUserInitialsFor(name: string): string {
+    if (!name) return 'US';
+    const parts = name.trim().split(/\s+/);
+    return parts.length > 1 ? (parts[0][0] + parts[1][0]).toUpperCase() : name.substring(0, 2).toUpperCase();
+  }
+
+  getUserRoleColor(role: string): string {
+    const roleColors: { [role: string]: string } = {
+      'Admin': '#0d9488',
+      'Product Owner': '#8b5cf6',
+      'Scrum Master': '#3b82f6',
+      'Lead Developer': '#0284c7',
+      'UX Designer': '#ec4899',
+      'QA Engineer': '#f59e0b'
+    };
+    return roleColors[role] || '#64748b';
+  }
+
+  get rolesBreakdown(): { role: string; count: number; color: string }[] {
+    const counts: { [role: string]: number } = {};
+    this.rolesList.forEach(r => counts[r] = 0);
+    this.users.forEach(u => {
+      if (counts[u.role] !== undefined) {
+        counts[u.role]++;
+      }
+    });
+    return this.rolesList
+      .filter(r => (counts[r] || 0) > 0)
+      .map(r => ({
+        role: r,
+        count: counts[r] || 0,
+        color: this.getUserRoleColor(r)
+      }));
+  }
+
 }

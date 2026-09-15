@@ -122,48 +122,82 @@
           </button>
         </div>
 
-        <div class="filters-bar">
-          <select class="filter-select" [(ngModel)]="filterRole">
-            <option value="all">Rol: Todos</option>
-            <option *ngFor="let r of rolesList" [value]="r">{{ r }}</option>
-          </select>
+        <div class="filters-bar users-filter-bar">
+          <div class="filters-group-left">
+            <div class="filter-input-wrap">
+              <svg class="filter-icon" width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+              </svg>
+              <select class="filter-select" [(ngModel)]="filterRole">
+                <option value="all">Rol: Todos los roles</option>
+                <option *ngFor="let r of rolesList" [value]="r">{{ r }}</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="users-counter-pill">
+            Equipo: <strong>{{ filteredUsers.length }}</strong> de {{ users.length }} integrantes
+          </div>
         </div>
 
         <div class="table-card">
-          <table class="data-table">
+          <table class="data-table users-table">
             <thead>
               <tr>
-                <th>Nombres & Apellidos</th>
-                <th>Correo Electrónico</th>
-                <th>Rol</th>
-                <th>Acciones</th>
+                <th class="col-user-info">Integrante / Nombre</th>
+                <th class="col-user-email">Correo Electrónico</th>
+                <th class="col-user-role">Rol en el Equipo</th>
+                <th class="col-user-tasks">Tareas</th>
+                <th class="col-user-actions">Acciones</th>
               </tr>
             </thead>
             <tbody>
               <tr *ngIf="filteredUsers.length === 0">
-                <td colspan="4" style="text-align: center; padding: 2.5rem; color: #64748b;">
+                <td colspan="5" style="text-align: center; padding: 2.5rem; color: #64748b;">
                   No se encontraron usuarios con los filtros seleccionados.
                 </td>
               </tr>
               <tr *ngFor="let user of filteredUsers">
-                <td>
-                  <span class="user-fullname">{{ user.name }}</span>
+                <td class="col-user-info">
+                  <div class="user-directory-card">
+                    <div class="user-avatar-circle" [style.background-color]="getUserRoleColor(user.role)">
+                      {{ getUserInitialsFor(user.name) }}
+                    </div>
+                    <div class="user-meta-wrap">
+                      <span class="user-fullname">{{ user.name }}</span>
+                      <span class="user-subtext-clean">ID #{{ user.id }} &bull; Miembro activo</span>
+                    </div>
+                  </div>
                 </td>
-                <td>
-                  <span style="color: #64748b; font-size: 0.88rem;">{{ user.email }}</span>
+                <td class="col-user-email">
+                  <div class="user-email-wrap">
+                    <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                    </svg>
+                    <span class="user-email-text">{{ user.email }}</span>
+                  </div>
                 </td>
-                <td>
-                  <span class="role-badge">{{ user.role }}</span>
+                <td class="col-user-role">
+                  <span class="role-pill-badge" [style.color]="getUserRoleColor(user.role)" [style.background-color]="getUserRoleColor(user.role) + '18'">
+                    <span class="role-dot" [style.background-color]="getUserRoleColor(user.role)"></span>
+                    {{ user.role }}
+                  </span>
                 </td>
-                <td>
-                  <div class="action-buttons-group">
-                    <button class="btn-action-icon" title="Editar" (click)="editUser(user)">
+                <td class="col-user-tasks">
+                  <span class="tasks-count-pill" [class.has-tasks]="getUserTaskCount(user.id) > 0">
+                    {{ getUserTaskCount(user.id) }} {{ getUserTaskCount(user.id) === 1 ? 'tarea' : 'tareas' }}
+                  </span>
+                </td>
+                <td class="col-user-actions">
+                  <div class="action-buttons-group right-align">
+                    <button class="btn-action-icon" title="Editar Usuario" (click)="editUser(user)">
                       <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                           d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
                       </svg>
                     </button>
-                    <button class="btn-action-icon btn-delete" title="Eliminar" (click)="deleteUser(user.id)">
+                    <button class="btn-action-icon btn-delete" title="Eliminar Usuario" (click)="deleteUser(user.id)">
                       <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                           d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -184,18 +218,20 @@
               <span class="kpi-metric-value">{{ filteredUsers.length }}</span>
             </div>
             <div class="kpi-metric-item">
-              <span class="kpi-metric-label">Usuarios por Rol</span>
-              <div class="kpi-metric-subtext">{{ roleSummary }}</div>
+              <span class="kpi-metric-label">Distribución por Rol</span>
+              <div class="roles-chips-summary">
+                <span *ngFor="let r of rolesBreakdown" class="role-chip-summary" [style.border-left-color]="r.color">
+                  <strong>{{ r.count }}</strong> {{ r.role }}
+                </span>
+              </div>
             </div>
             <div class="kpi-metric-item">
-              <span class="kpi-metric-label">Total Tareas</span>
-              <span class="kpi-metric-value">{{ tasks.length }}</span>
+              <span class="kpi-metric-label">Total Tareas Activas</span>
+              <span class="kpi-metric-value text-blue">{{ tasks.length }}</span>
             </div>
           </div>
           <div class="pagination-controls">
-            <button class="btn-page" disabled>&laquo;</button>
             <button class="btn-page active">1</button>
-            <button class="btn-page">&raquo;</button>
           </div>
         </div>
       </section>
@@ -212,28 +248,41 @@
           </button>
         </div>
 
-        <div class="filters-bar">
-          <select class="filter-select" [(ngModel)]="filterRole">
-            <option value="all">Rol Responsable: Todos</option>
-            <option *ngFor="let r of rolesList" [value]="r">{{ r }}</option>
-          </select>
+        <div class="filters-bar tasks-filter-bar">
+          <div class="filters-group-left">
+            <div class="filter-input-wrap">
+              <svg class="filter-icon" width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+              </svg>
+              <select class="filter-select" [(ngModel)]="filterRole">
+                <option value="all">Rol Responsable: Todos</option>
+                <option *ngFor="let r of rolesList" [value]="r">{{ r }}</option>
+              </select>
+            </div>
 
-          <select class="filter-select" [(ngModel)]="filterStatus">
-            <option value="all">Estado: Todos</option>
-            <option value="Sin asignar">Sin asignar</option>
-            <option value="En curso">En curso</option>
-            <option value="Finalizado">Finalizado</option>
-          </select>
+            <div class="filter-input-wrap">
+              <select class="filter-select" [(ngModel)]="filterStatus">
+                <option value="all">Estado: Todos</option>
+                <option value="Sin asignar">Sin asignar</option>
+                <option value="En curso">En curso</option>
+                <option value="Finalizado">Finalizado</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="tasks-counter-pill">
+            Mostrando <strong>{{ filteredTasks.length }}</strong> de {{ tasks.length }} tareas
+          </div>
         </div>
 
         <div class="table-card">
-          <table class="data-table">
+          <table class="data-table tasks-table">
             <thead>
               <tr>
-                <th>Tarea / Descripción</th>
-                <th>Responsable & Rol</th>
-                <th>Estado</th>
-                <th>Acciones</th>
+                <th class="col-task-info">Tarea & Descripción</th>
+                <th class="col-task-assignee">Responsable & Rol</th>
+                <th class="col-task-status">Estado</th>
+                <th class="col-task-actions">Acciones</th>
               </tr>
             </thead>
             <tbody>
@@ -243,34 +292,64 @@
                 </td>
               </tr>
               <tr *ngFor="let task of filteredTasks">
-                <td style="max-width: 320px;">
-                  <div class="user-info-group">
-                    <span class="user-fullname">{{ task.title }}</span>
-                    <span class="user-subtext">{{ task.description }}</span>
+                <td class="col-task-info">
+                  <div class="task-info-group">
+                    <div class="task-icon-dot" [ngClass]="{
+                      'dot-completed': task.status === 'Finalizado',
+                      'dot-in-progress': task.status === 'En curso',
+                      'dot-unassigned': task.status === 'Sin asignar'
+                    }">
+                      <svg *ngIf="task.status === 'Finalizado'" width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" />
+                      </svg>
+                      <svg *ngIf="task.status === 'En curso'" width="10" height="10" fill="currentColor" viewBox="0 0 24 24">
+                        <circle cx="12" cy="12" r="8" />
+                      </svg>
+                      <svg *ngIf="task.status === 'Sin asignar'" width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <circle cx="12" cy="12" r="7" stroke-width="2" stroke-dasharray="3 3" />
+                      </svg>
+                    </div>
+                    <div class="task-text-wrap">
+                      <span class="task-title">{{ task.title }}</span>
+                      <span class="task-desc">{{ task.description }}</span>
+                    </div>
                   </div>
                 </td>
-                <!-- NOMBRE Y AL LADO EL ROL -->
-                <td>
-                  <div *ngIf="task.assignedUserId" class="user-with-role-group">
-                    <span class="assigned-name">{{ task.assignedUserName }}</span>
-                    <span class="assigned-role-tag">({{ task.assignedUserRole || getUserRole(task.assignedUserId)
-                      }})</span>
+                <td class="col-task-assignee">
+                  <div *ngIf="getTaskAssigneeInfo(task) as assignee" class="assignee-chip">
+                    <span class="chip-avatar" [style.background-color]="assignee.color">{{ assignee.initials }}</span>
+                    <div class="assignee-info">
+                      <span class="assignee-name">{{ assignee.cleanName }}</span>
+                      <span class="assignee-role">{{ assignee.role }}</span>
+                    </div>
                   </div>
-                  <span *ngIf="!task.assignedUserId" style="color: #94a3b8; font-style: italic; font-size: 0.84rem;">
-                    (Sin asignar)
-                  </span>
+                  <div *ngIf="!getTaskAssigneeInfo(task)" class="unassigned-chip">
+                    <span class="unassigned-avatar">?</span>
+                    <span class="unassigned-label">Sin asignar</span>
+                  </div>
                 </td>
-                <td>
-                  <span class="task-status-badge" [ngClass]="{
-                    'badge-completed': task.status === 'Finalizado',
-                    'badge-in-progress': task.status === 'En curso',
-                    'badge-unassigned': task.status === 'Sin asignar'
-                  }">
-                    ● {{ task.status }}
-                  </span>
+                <td class="col-task-status">
+                  <button type="button" class="task-status-badge interactive-badge" 
+                          [ngClass]="{
+                            'badge-completed': task.status === 'Finalizado',
+                            'badge-in-progress': task.status === 'En curso',
+                            'badge-unassigned': task.status === 'Sin asignar'
+                          }"
+                          (click)="toggleTaskStatus(task)"
+                          title="Clic para cambiar de estado rápido">
+                    <span class="status-dot"></span>
+                    <span>{{ task.status }}</span>
+                  </button>
                 </td>
-                <td>
-                  <div class="action-buttons-group">
+                <td class="col-task-actions">
+                  <div class="action-buttons-group right-align">
+                    <button class="btn-action-icon btn-view" title="Cambiar Estado Rápido"
+                      (click)="toggleTaskStatus(task)">
+                      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                      </svg>
+                    </button>
                     <button class="btn-action-icon" title="Editar Tarea" (click)="editTask(task)">
                       <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -281,13 +360,6 @@
                       <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                           d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                      </svg>
-                    </button>
-                    <button class="btn-action-icon btn-view" title="Cambiar Estado Rápido"
-                      (click)="toggleTaskStatus(task)">
-                      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                          d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                       </svg>
                     </button>
                   </div>
@@ -305,15 +377,15 @@
             </div>
             <div class="kpi-metric-item">
               <span class="kpi-metric-label">En curso</span>
-              <span class="kpi-metric-value" style="color: var(--status-blue-text);">{{ tasksInProgressCount }}</span>
+              <span class="kpi-metric-value text-blue">{{ tasksInProgressCount }}</span>
             </div>
             <div class="kpi-metric-item">
               <span class="kpi-metric-label">Finalizadas</span>
-              <span class="kpi-metric-value" style="color: var(--status-green-text);">{{ tasksCompletedCount }}</span>
+              <span class="kpi-metric-value text-green">{{ tasksCompletedCount }}</span>
             </div>
             <div class="kpi-metric-item">
               <span class="kpi-metric-label">Sin Asignar</span>
-              <span class="kpi-metric-value" style="color: var(--text-muted);">{{ tasksUnassignedCount }}</span>
+              <span class="kpi-metric-value text-muted">{{ tasksUnassignedCount }}</span>
             </div>
           </div>
           <div class="pagination-controls">
@@ -335,13 +407,13 @@
         </div>
 
         <div class="table-card">
-          <table class="data-table">
+          <table class="data-table projects-table">
             <thead>
               <tr>
-                <th>Nombre del Proyecto</th>
-                <th>Estado</th>
-                <th>Lista de Participantes</th>
-                <th>Acciones</th>
+                <th class="col-proj-name">Nombre del Proyecto</th>
+                <th class="col-proj-status">Estado</th>
+                <th class="col-proj-team">Lista de Participantes</th>
+                <th class="col-proj-actions">Acciones</th>
               </tr>
             </thead>
             <tbody>
@@ -351,29 +423,35 @@
                 </td>
               </tr>
               <tr *ngFor="let proj of filteredProjects">
-                <td style="max-width: 280px;">
-                  <div class="user-info-group">
-                    <span class="user-fullname">{{ proj.name }}</span>
-                    <span class="user-subtext">{{ proj.description }}</span>
+                <td class="col-proj-name">
+                  <div class="project-info-cell">
+                    <span class="project-title">{{ proj.name }}</span>
+                    <span class="project-desc">{{ proj.description }}</span>
                   </div>
                 </td>
-                <td>
+                <td class="col-proj-status">
                   <span class="task-status-badge"
                     [ngClass]="proj.status === 'Finalizado' ? 'badge-completed' : 'badge-in-progress'">
-                    ● {{ proj.status }}
+                    <span class="status-dot"></span>
+                    {{ proj.status }}
                   </span>
                 </td>
-                <td>
-                  <div style="display: flex; flex-wrap: wrap; gap: 0.35rem; max-width: 400px;">
-                    <span *ngIf="getParticipantList(proj.participantIds).length === 0"
-                      style="color: #94a3b8; font-style: italic;">Sin participantes</span>
-                    <span *ngFor="let p of getParticipantList(proj.participantIds)" class="participant-name-pill">
-                      <strong>{{ p.name }}</strong> <small>({{ p.role }})</small>
+                <td class="col-proj-team">
+                  <div class="participants-cell">
+                    <span *ngIf="getParticipantList(proj.participantIds).length === 0" class="no-participants-text">
+                      Sin participantes asignados
                     </span>
+                    <div class="participant-chips-container" *ngIf="getParticipantList(proj.participantIds).length > 0">
+                      <div *ngFor="let p of getParticipantList(proj.participantIds)" class="participant-chip">
+                        <span class="chip-avatar" [style.background-color]="p.color">{{ p.initials }}</span>
+                        <span class="chip-name">{{ p.cleanName }}</span>
+                        <span class="chip-role-pill">{{ p.role }}</span>
+                      </div>
+                    </div>
                   </div>
                 </td>
-                <td>
-                  <div class="action-buttons-group">
+                <td class="col-proj-actions">
+                  <div class="action-buttons-group right-align">
                     <button class="btn-action-icon" title="Editar Proyecto" (click)="editProject(proj)">
                       <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -416,26 +494,168 @@
           <h1 class="view-title">Dashboard General</h1>
         </div>
 
-        <div
-          style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.25rem; margin-bottom: 1.5rem;">
-          <div class="table-card" style="padding: 1.5rem; cursor: pointer;" (click)="switchView('users')">
-            <span style="font-size: 0.82rem; color: var(--text-muted); font-weight: 600;">EQUIPO TOTAL</span>
-            <div style="font-size: 1.8rem; font-weight: 700; margin: 0.4rem 0;">{{ users.length }}</div>
-            <span style="color: var(--primary-teal); font-size: 0.82rem; font-weight: 500;">Gestión de integrantes y
-              roles</span>
+        <!-- KPI CARDS -->
+        <div class="dashboard-kpi-grid">
+          <div class="table-card kpi-card" (click)="switchView('users')">
+            <div class="kpi-icon-wrap teal">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+              </svg>
+            </div>
+            <div class="kpi-data">
+              <span class="kpi-label">EQUIPO TOTAL</span>
+              <div class="kpi-number">{{ users.length }}</div>
+              <span class="kpi-meta text-teal">Gestión de integrantes y roles &rarr;</span>
+            </div>
           </div>
 
-          <div class="table-card" style="padding: 1.5rem; cursor: pointer;" (click)="switchView('tasks')">
-            <span style="font-size: 0.82rem; color: var(--text-muted); font-weight: 600;">TAREAS ACTIVAS</span>
-            <div style="font-size: 1.8rem; font-weight: 700; margin: 0.4rem 0;">{{ tasks.length }}</div>
-            <span style="color: var(--status-blue-text); font-size: 0.82rem; font-weight: 500;">En curso y
-              pendientes</span>
+          <div class="table-card kpi-card" (click)="switchView('tasks')">
+            <div class="kpi-icon-wrap blue">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+              </svg>
+            </div>
+            <div class="kpi-data">
+              <span class="kpi-label">TAREAS ACTIVAS</span>
+              <div class="kpi-number">{{ tasks.length }}</div>
+              <span class="kpi-meta text-blue">{{ tasksInProgressCount }} en curso &bull; {{ tasksCompletedCount }} finalizadas</span>
+            </div>
           </div>
 
-          <div class="table-card" style="padding: 1.5rem; cursor: pointer;" (click)="switchView('projects')">
-            <span style="font-size: 0.82rem; color: var(--text-muted); font-weight: 600;">PROYECTOS</span>
-            <div style="font-size: 1.8rem; font-weight: 700; margin: 0.4rem 0;">{{ projects.length }}</div>
-            <span style="color: var(--primary-teal); font-size: 0.82rem; font-weight: 500;">Proyectos activos</span>
+          <div class="table-card kpi-card" (click)="switchView('projects')">
+            <div class="kpi-icon-wrap purple">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+              </svg>
+            </div>
+            <div class="kpi-data">
+              <span class="kpi-label">PROYECTOS</span>
+              <div class="kpi-number">{{ projects.length }}</div>
+              <span class="kpi-meta text-purple">Proyectos activos &rarr;</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- SECCIÓN DE GRÁFICOS ANALÍTICOS -->
+        <div class="dashboard-analytics-grid">
+
+          <!-- Gráfico 1: Estado de Tareas (Dona / Anillo) -->
+          <div class="dashboard-chart-card">
+            <div class="chart-card-header">
+              <div>
+                <h2 class="chart-card-title">Distribución de Tareas</h2>
+                <p class="chart-card-subtitle">Estado actual del flujo de trabajo</p>
+              </div>
+              <span class="chart-badge success">{{ taskCompletionPercentage }}% Completado</span>
+            </div>
+
+            <div class="donut-chart-wrapper">
+              <div class="donut-chart-graphic" [style.background]="donutChartConicStyle">
+                <div class="donut-chart-center">
+                  <span class="donut-center-value">{{ tasks.length }}</span>
+                  <span class="donut-center-label">Total Tareas</span>
+                </div>
+              </div>
+
+              <div class="donut-legend-list">
+                <div class="donut-legend-item">
+                  <div class="legend-indicator completed"></div>
+                  <div class="legend-details">
+                    <span class="legend-name">Finalizadas</span>
+                    <span class="legend-sub">{{ tasksCompletedCount }} tareas ({{ taskCompletionPercentage }}%)</span>
+                  </div>
+                </div>
+
+                <div class="donut-legend-item">
+                  <div class="legend-indicator in-progress"></div>
+                  <div class="legend-details">
+                    <span class="legend-name">En Curso</span>
+                    <span class="legend-sub">{{ tasksInProgressCount }} tareas ({{ taskInProgressPercentage }}%)</span>
+                  </div>
+                </div>
+
+                <div class="donut-legend-item">
+                  <div class="legend-indicator unassigned"></div>
+                  <div class="legend-details">
+                    <span class="legend-name">Sin Asignar</span>
+                    <span class="legend-sub">{{ tasksUnassignedCount }} tareas ({{ taskUnassignedPercentage }}%)</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="chart-card-footer-metric">
+              <div class="metric-mini-pill">
+                <span>🟢 Eficiencia</span>
+              </div>
+              <span class="metric-mini-text">{{ tasksCompletedCount }} de {{ tasks.length }} tareas cerradas con éxito</span>
+            </div>
+          </div>
+
+          <!-- Gráfico 2: Carga de Trabajo por Rol (Barras Horizontales) -->
+          <div class="dashboard-chart-card">
+            <div class="chart-card-header">
+              <div>
+                <h2 class="chart-card-title">Carga de Trabajo por Rol</h2>
+                <p class="chart-card-subtitle">Asignación de tareas según especialidad</p>
+              </div>
+              <span class="chart-badge info">{{ users.length }} Integrantes</span>
+            </div>
+
+            <div class="bar-chart-container">
+              <div class="bar-chart-row" *ngFor="let item of tasksByRole">
+                <div class="bar-row-info">
+                  <span class="bar-role-name">{{ item.role }}</span>
+                  <span class="bar-task-count">{{ item.count }} {{ item.count === 1 ? 'tarea' : 'tareas' }}</span>
+                </div>
+                <div class="bar-track">
+                  <div class="bar-fill" [style.width.%]="item.percentage" [style.background-color]="item.color"></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="chart-card-footer-metric">
+              <div class="metric-mini-pill">
+                <span>⚡ Asignación</span>
+              </div>
+              <span class="metric-mini-text">Promedio: {{ (tasks.length / (users.length || 1)).toFixed(1) }} tareas / integrante</span>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Gráfico 3: Avance de Proyectos Activos (Barras de Progreso Lineales) -->
+        <div class="dashboard-chart-card full-width-card">
+          <div class="chart-card-header">
+            <div>
+              <h2 class="chart-card-title">Progreso de Proyectos Activos</h2>
+              <p class="chart-card-subtitle">Seguimiento global de desarrollo y despliegue</p>
+            </div>
+            <button class="btn-chart-action" (click)="switchView('projects')">Ver todos los proyectos &rarr;</button>
+          </div>
+
+          <div class="projects-progress-grid">
+            <div class="project-progress-item" *ngFor="let proj of projectProgressList">
+              <div class="proj-header-row">
+                <div class="proj-title-group">
+                  <span class="proj-name">{{ proj.name }}</span>
+                  <span class="proj-badge" [ngClass]="proj.status === 'Finalizado' ? 'badge-completed' : 'badge-in-progress'">
+                    {{ proj.status }}
+                  </span>
+                </div>
+                <span class="proj-pct-number" [style.color]="proj.color">{{ proj.progress }}%</span>
+              </div>
+
+              <div class="proj-progress-track">
+                <div class="proj-progress-fill" [style.width.%]="proj.progress" [style.background-color]="proj.color"></div>
+              </div>
+
+              <div class="proj-meta-row">
+                <span>👥 {{ proj.participantsCount }} participantes asignados</span>
+                <span *ngIf="proj.progress === 100">🎉 Listo para entrega</span>
+                <span *ngIf="proj.progress < 100">🚀 En desarrollo activo</span>
+              </div>
+            </div>
           </div>
         </div>
       </section>
