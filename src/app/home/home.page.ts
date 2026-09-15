@@ -355,7 +355,7 @@ export class HomePage implements OnInit {
     const pInProgress = this.taskInProgressPercentage;
     const endCompleted = pCompleted;
     const endInProgress = pCompleted + pInProgress;
-    return "conic-gradient(#10b981 0% " + endCompleted + "%, #3b82f6 " + endCompleted + "% " + endInProgress + "%, #cbd5e1 " + endInProgress + "% 100%)";
+    return "conic-gradient(#10b981 0% " + endCompleted + "%, #22d3ee " + endCompleted + "% " + endInProgress + "%, #334155 " + endInProgress + "% 100%)";
   }
 
   get tasksByRole(): { role: string; count: number; percentage: number; color: string }[] {
@@ -381,13 +381,13 @@ export class HomePage implements OnInit {
   get projectProgressList(): { name: string; status: string; progress: number; participantsCount: number; color: string }[] {
     return this.projects.map((p, idx) => {
       let progress = 45;
-      let color = '#3b82f6';
+      let color = '#22d3ee';
       if (p.status === 'Finalizado') {
         progress = 100;
         color = '#10b981';
       } else if (p.status === 'En progreso') {
         progress = idx === 0 ? 80 : 50;
-        color = '#0d9488';
+        color = '#22d3ee';
       } else {
         progress = 25;
         color = '#f59e0b';
