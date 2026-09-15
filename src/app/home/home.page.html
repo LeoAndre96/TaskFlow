@@ -1,0 +1,583 @@
+<ion-content [fullscreen]="true">
+  <!-- Overlay para menú móvil -->
+  <div class="sidebar-backdrop" [class.active]="mobileMenuOpen" (click)="toggleMobileMenu()"></div>
+
+  <div class="app-container">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar" [class.mobile-open]="mobileMenuOpen">
+      <div>
+        <div class="sidebar-brand" (click)="switchView('users')">
+          <div class="brand-icon">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
+            </svg>
+          </div>
+          <div class="brand-info">
+            <span class="brand-title">DEVIOZ</span>
+            <span class="brand-subtitle">TASKFLOW</span>
+          </div>
+        </div>
+
+        <div class="sidebar-section-title">PRINCIPAL</div>
+        <ul class="sidebar-nav">
+          <li class="nav-item" [class.active]="currentView === 'dashboard'" (click)="switchView('dashboard')">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+            </svg>
+            <span>Dashboard</span>
+          </li>
+
+          <li class="nav-item" [class.active]="currentView === 'projects'" (click)="switchView('projects')">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+            </svg>
+            <span>Proyectos</span>
+          </li>
+
+          <li class="nav-item" [class.active]="currentView === 'tasks'" (click)="switchView('tasks')">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+            </svg>
+            <span>Tareas</span>
+          </li>
+
+          <li class="nav-item" [class.active]="currentView === 'users'" (click)="switchView('users')">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+            </svg>
+            <span>Usuarios</span>
+          </li>
+        </ul>
+      </div>
+
+      <div class="sidebar-footer">
+        <div class="user-profile-badge">
+          <div class="profile-avatar-circle">{{ getUserInitials() }}</div>
+          <div class="profile-info">
+            <span class="profile-name">{{ getUserDisplayName() }}</span>
+            <span class="profile-role">{{ currentUser?.role || 'Admin' }}</span>
+          </div>
+        </div>
+        <button class="btn-logout" title="Cerrar sesión" (click)="logout()">
+          <span>&rarr; Salir</span>
+        </button>
+      </div>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main class="main-content">
+      <!-- Top Header -->
+      <header class="top-header">
+        <div class="breadcrumbs-area">
+          <button class="mobile-menu-toggle" (click)="toggleMobileMenu()" aria-label="Abrir menú">
+            <svg width="22" height="22" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+          </button>
+
+          <div class="breadcrumb-root">
+            <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+            </svg>
+            <span>Plataforma</span>
+          </div>
+          <span class="breadcrumb-separator">&rsaquo;</span>
+          <span style="color: var(--text-muted);">
+            {{ currentView === 'users' ? 'Equipo' : currentView === 'tasks' ? 'Flujo' : currentView === 'projects' ?
+            'Proyectos' : 'Plataforma' }}
+          </span>
+          <span class="breadcrumb-separator">&rsaquo;</span>
+          <span class="breadcrumb-current">
+            {{ currentView === 'users' ? 'Gestión de Usuarios' : currentView === 'tasks' ? 'Control de Tareas' :
+            currentView === 'projects' ? 'Proyectos & Equipos' : 'Dashboard General' }}
+          </span>
+        </div>
+
+        <div class="header-actions">
+          <div class="search-box">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+            <input type="text" [(ngModel)]="searchQuery" placeholder="Buscar..." autocomplete="off">
+          </div>
+        </div>
+      </header>
+
+      <!-- VISTA 1: USUARIOS (SOLO ROLES, SIN ÁREA) -->
+      <section *ngIf="currentView === 'users'">
+        <div class="view-header">
+          <h1 class="view-title">Gestión de Usuarios</h1>
+          <button class="btn-primary" (click)="openNewUserModal()">
+            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+            </svg>
+            Nuevo Usuario
+          </button>
+        </div>
+
+        <div class="filters-bar">
+          <select class="filter-select" [(ngModel)]="filterRole">
+            <option value="all">Rol: Todos</option>
+            <option *ngFor="let r of rolesList" [value]="r">{{ r }}</option>
+          </select>
+        </div>
+
+        <div class="table-card">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Nombres & Apellidos</th>
+                <th>Correo Electrónico</th>
+                <th>Rol</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngIf="filteredUsers.length === 0">
+                <td colspan="4" style="text-align: center; padding: 2.5rem; color: #64748b;">
+                  No se encontraron usuarios con los filtros seleccionados.
+                </td>
+              </tr>
+              <tr *ngFor="let user of filteredUsers">
+                <td>
+                  <span class="user-fullname">{{ user.name }}</span>
+                </td>
+                <td>
+                  <span style="color: #64748b; font-size: 0.88rem;">{{ user.email }}</span>
+                </td>
+                <td>
+                  <span class="role-badge">{{ user.role }}</span>
+                </td>
+                <td>
+                  <div class="action-buttons-group">
+                    <button class="btn-action-icon" title="Editar" (click)="editUser(user)">
+                      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                      </svg>
+                    </button>
+                    <button class="btn-action-icon btn-delete" title="Eliminar" (click)="deleteUser(user.id)">
+                      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      </svg>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Footer KPI -->
+        <div class="bottom-kpi-bar">
+          <div class="kpi-metrics-row">
+            <div class="kpi-metric-item">
+              <span class="kpi-metric-label">Total Usuarios</span>
+              <span class="kpi-metric-value">{{ filteredUsers.length }}</span>
+            </div>
+            <div class="kpi-metric-item">
+              <span class="kpi-metric-label">Usuarios por Rol</span>
+              <div class="kpi-metric-subtext">{{ roleSummary }}</div>
+            </div>
+            <div class="kpi-metric-item">
+              <span class="kpi-metric-label">Total Tareas</span>
+              <span class="kpi-metric-value">{{ tasks.length }}</span>
+            </div>
+          </div>
+          <div class="pagination-controls">
+            <button class="btn-page" disabled>&laquo;</button>
+            <button class="btn-page active">1</button>
+            <button class="btn-page">&raquo;</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- VISTA 2: TAREAS (NOMBRE Y ROL AL LADO EN VEZ DE ÁREA) -->
+      <section *ngIf="currentView === 'tasks'">
+        <div class="view-header">
+          <h1 class="view-title">Control de Tareas</h1>
+          <button class="btn-primary" (click)="openNewTaskModal()">
+            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+            </svg>
+            Nueva Tarea
+          </button>
+        </div>
+
+        <div class="filters-bar">
+          <select class="filter-select" [(ngModel)]="filterRole">
+            <option value="all">Rol Responsable: Todos</option>
+            <option *ngFor="let r of rolesList" [value]="r">{{ r }}</option>
+          </select>
+
+          <select class="filter-select" [(ngModel)]="filterStatus">
+            <option value="all">Estado: Todos</option>
+            <option value="Sin asignar">Sin asignar</option>
+            <option value="En curso">En curso</option>
+            <option value="Finalizado">Finalizado</option>
+          </select>
+        </div>
+
+        <div class="table-card">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Tarea / Descripción</th>
+                <th>Responsable & Rol</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngIf="filteredTasks.length === 0">
+                <td colspan="4" style="text-align: center; padding: 2.5rem; color: #64748b;">
+                  No se encontraron tareas con los filtros seleccionados.
+                </td>
+              </tr>
+              <tr *ngFor="let task of filteredTasks">
+                <td style="max-width: 320px;">
+                  <div class="user-info-group">
+                    <span class="user-fullname">{{ task.title }}</span>
+                    <span class="user-subtext">{{ task.description }}</span>
+                  </div>
+                </td>
+                <!-- NOMBRE Y AL LADO EL ROL -->
+                <td>
+                  <div *ngIf="task.assignedUserId" class="user-with-role-group">
+                    <span class="assigned-name">{{ task.assignedUserName }}</span>
+                    <span class="assigned-role-tag">({{ task.assignedUserRole || getUserRole(task.assignedUserId)
+                      }})</span>
+                  </div>
+                  <span *ngIf="!task.assignedUserId" style="color: #94a3b8; font-style: italic; font-size: 0.84rem;">
+                    (Sin asignar)
+                  </span>
+                </td>
+                <td>
+                  <span class="task-status-badge" [ngClass]="{
+                    'badge-completed': task.status === 'Finalizado',
+                    'badge-in-progress': task.status === 'En curso',
+                    'badge-unassigned': task.status === 'Sin asignar'
+                  }">
+                    ● {{ task.status }}
+                  </span>
+                </td>
+                <td>
+                  <div class="action-buttons-group">
+                    <button class="btn-action-icon" title="Editar Tarea" (click)="editTask(task)">
+                      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                      </svg>
+                    </button>
+                    <button class="btn-action-icon btn-delete" title="Eliminar" (click)="deleteTask(task.id)">
+                      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      </svg>
+                    </button>
+                    <button class="btn-action-icon btn-view" title="Cambiar Estado Rápido"
+                      (click)="toggleTaskStatus(task)">
+                      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                      </svg>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="bottom-kpi-bar">
+          <div class="kpi-metrics-row">
+            <div class="kpi-metric-item">
+              <span class="kpi-metric-label">Total Tareas</span>
+              <span class="kpi-metric-value">{{ filteredTasks.length }}</span>
+            </div>
+            <div class="kpi-metric-item">
+              <span class="kpi-metric-label">En curso</span>
+              <span class="kpi-metric-value" style="color: var(--status-blue-text);">{{ tasksInProgressCount }}</span>
+            </div>
+            <div class="kpi-metric-item">
+              <span class="kpi-metric-label">Finalizadas</span>
+              <span class="kpi-metric-value" style="color: var(--status-green-text);">{{ tasksCompletedCount }}</span>
+            </div>
+            <div class="kpi-metric-item">
+              <span class="kpi-metric-label">Sin Asignar</span>
+              <span class="kpi-metric-value" style="color: var(--text-muted);">{{ tasksUnassignedCount }}</span>
+            </div>
+          </div>
+          <div class="pagination-controls">
+            <button class="btn-page active">1</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- VISTA 3: PROYECTOS -->
+      <section *ngIf="currentView === 'projects'">
+        <div class="view-header">
+          <h1 class="view-title">Proyectos & Equipos</h1>
+          <button class="btn-primary" (click)="openNewProjectModal()">
+            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+            </svg>
+            Nuevo Proyecto
+          </button>
+        </div>
+
+        <div class="table-card">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Nombre del Proyecto</th>
+                <th>Estado</th>
+                <th>Lista de Participantes</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngIf="filteredProjects.length === 0">
+                <td colspan="4" style="text-align: center; padding: 2.5rem; color: #64748b;">
+                  No hay proyectos registrados.
+                </td>
+              </tr>
+              <tr *ngFor="let proj of filteredProjects">
+                <td style="max-width: 280px;">
+                  <div class="user-info-group">
+                    <span class="user-fullname">{{ proj.name }}</span>
+                    <span class="user-subtext">{{ proj.description }}</span>
+                  </div>
+                </td>
+                <td>
+                  <span class="task-status-badge"
+                    [ngClass]="proj.status === 'Finalizado' ? 'badge-completed' : 'badge-in-progress'">
+                    ● {{ proj.status }}
+                  </span>
+                </td>
+                <td>
+                  <div style="display: flex; flex-wrap: wrap; gap: 0.35rem; max-width: 400px;">
+                    <span *ngIf="getParticipantList(proj.participantIds).length === 0"
+                      style="color: #94a3b8; font-style: italic;">Sin participantes</span>
+                    <span *ngFor="let p of getParticipantList(proj.participantIds)" class="participant-name-pill">
+                      <strong>{{ p.name }}</strong> <small>({{ p.role }})</small>
+                    </span>
+                  </div>
+                </td>
+                <td>
+                  <div class="action-buttons-group">
+                    <button class="btn-action-icon" title="Editar Proyecto" (click)="editProject(proj)">
+                      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                      </svg>
+                    </button>
+                    <button class="btn-action-icon btn-delete" title="Eliminar" (click)="deleteProject(proj.id)">
+                      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      </svg>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="bottom-kpi-bar">
+          <div class="kpi-metrics-row">
+            <div class="kpi-metric-item">
+              <span class="kpi-metric-label">Total Proyectos</span>
+              <span class="kpi-metric-value">{{ projects.length }}</span>
+            </div>
+            <div class="kpi-metric-item">
+              <span class="kpi-metric-label">Participantes Asignados</span>
+              <span class="kpi-metric-value">{{ users.length }}</span>
+            </div>
+          </div>
+          <div class="pagination-controls">
+            <button class="btn-page active">1</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- VISTA 4: DASHBOARD -->
+      <section *ngIf="currentView === 'dashboard'">
+        <div class="view-header">
+          <h1 class="view-title">Dashboard General</h1>
+        </div>
+
+        <div
+          style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.25rem; margin-bottom: 1.5rem;">
+          <div class="table-card" style="padding: 1.5rem; cursor: pointer;" (click)="switchView('users')">
+            <span style="font-size: 0.82rem; color: var(--text-muted); font-weight: 600;">EQUIPO TOTAL</span>
+            <div style="font-size: 1.8rem; font-weight: 700; margin: 0.4rem 0;">{{ users.length }}</div>
+            <span style="color: var(--primary-teal); font-size: 0.82rem; font-weight: 500;">Gestión de integrantes y
+              roles</span>
+          </div>
+
+          <div class="table-card" style="padding: 1.5rem; cursor: pointer;" (click)="switchView('tasks')">
+            <span style="font-size: 0.82rem; color: var(--text-muted); font-weight: 600;">TAREAS ACTIVAS</span>
+            <div style="font-size: 1.8rem; font-weight: 700; margin: 0.4rem 0;">{{ tasks.length }}</div>
+            <span style="color: var(--status-blue-text); font-size: 0.82rem; font-weight: 500;">En curso y
+              pendientes</span>
+          </div>
+
+          <div class="table-card" style="padding: 1.5rem; cursor: pointer;" (click)="switchView('projects')">
+            <span style="font-size: 0.82rem; color: var(--text-muted); font-weight: 600;">PROYECTOS</span>
+            <div style="font-size: 1.8rem; font-weight: 700; margin: 0.4rem 0;">{{ projects.length }}</div>
+            <span style="color: var(--primary-teal); font-size: 0.82rem; font-weight: 500;">Proyectos activos</span>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- MODAL USUARIO (SOLO ROL, SIN ÁREA) -->
+  <div class="modal-backdrop" [class.active]="showUserModal">
+    <div class="modal-window">
+      <div class="modal-header">
+        <h3 class="modal-title">{{ editingUser.id ? 'Editar Usuario' : 'Nuevo Usuario' }}</h3>
+        <button class="btn-close-modal" (click)="showUserModal = false">
+          <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label>Nombres & Apellidos</label>
+          <input type="text" [(ngModel)]="editingUser.name" class="form-control" placeholder="Ej: Carlos Admin"
+            required>
+        </div>
+        <div class="form-group">
+          <label>Correo Electrónico</label>
+          <input type="email" [(ngModel)]="editingUser.email" class="form-control" placeholder="usuario@taskflow.io">
+        </div>
+        <div class="form-group">
+          <label>Rol</label>
+          <select [(ngModel)]="editingUser.role" class="form-control">
+            <option *ngFor="let r of rolesList" [value]="r">{{ r }}</option>
+          </select>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn-secondary" (click)="showUserModal = false">Cancelar</button>
+        <button type="button" class="btn-primary" (click)="saveUser()">Guardar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL TAREA (SIN ÁREA, MUESTRA EL ROL DEL USUARIO) -->
+  <div class="modal-backdrop" [class.active]="showTaskModal">
+    <div class="modal-window">
+      <div class="modal-header">
+        <h3 class="modal-title">{{ editingTask.id ? 'Editar Tarea' : 'Nueva Tarea' }}</h3>
+        <button class="btn-close-modal" (click)="showTaskModal = false">
+          <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label>Título de la Tarea</label>
+          <input type="text" [(ngModel)]="editingTask.title" class="form-control"
+            placeholder="Ej: Configurar pasarela de pagos QR" required>
+        </div>
+        <div class="form-group">
+          <label>Descripción</label>
+          <textarea [(ngModel)]="editingTask.description" class="form-control" rows="2"
+            placeholder="Detalle de la tarea"></textarea>
+        </div>
+        <div class="form-group">
+          <label>Usuario Responsable & Rol</label>
+          <select [(ngModel)]="editingTask.assignedUserId" class="form-control">
+            <option [ngValue]="null">-- Sin Asignar --</option>
+            <option *ngFor="let u of users" [ngValue]="u.id">{{ u.name }} ({{ u.role }})</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Estado</label>
+          <select [(ngModel)]="editingTask.status" class="form-control">
+            <option value="Sin asignar">Sin asignar</option>
+            <option value="En curso">En curso</option>
+            <option value="Finalizado">Finalizado</option>
+          </select>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn-secondary" (click)="showTaskModal = false">Cancelar</button>
+        <button type="button" class="btn-primary" (click)="saveTask()">Guardar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL PROYECTO -->
+  <div class="modal-backdrop" [class.active]="showProjectModal">
+    <div class="modal-window">
+      <div class="modal-header">
+        <h3 class="modal-title">{{ editingProject.id ? 'Editar Proyecto' : 'Nuevo Proyecto' }}</h3>
+        <button class="btn-close-modal" (click)="showProjectModal = false">
+          <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label>Nombre del Proyecto</label>
+          <input type="text" [(ngModel)]="editingProject.name" class="form-control"
+            placeholder="Ej: Pasarela de Pagos QR" required>
+        </div>
+        <div class="form-group">
+          <label>Descripción</label>
+          <textarea [(ngModel)]="editingProject.description" class="form-control" rows="2"
+            placeholder="Objetivo del proyecto"></textarea>
+        </div>
+        <div class="form-group">
+          <label>Estado</label>
+          <select [(ngModel)]="editingProject.status" class="form-control">
+            <option value="En progreso">En progreso</option>
+            <option value="Planificación">Planificación</option>
+            <option value="Finalizado">Finalizado</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Lista de Participantes</label>
+          <div
+            style="max-height: 160px; overflow-y: auto; padding: 0.5rem; border: 1px solid var(--border-color); border-radius: var(--radius-md);">
+            <label *ngFor="let u of users"
+              style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; margin-bottom: 0.35rem; cursor: pointer;">
+              <input type="checkbox" [checked]="isParticipantSelected(u.id)" (change)="toggleParticipant(u.id)">
+              <span>{{ u.name }} <small style="color: var(--text-muted);">({{ u.role }})</small></span>
+            </label>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn-secondary" (click)="showProjectModal = false">Cancelar</button>
+        <button type="button" class="btn-primary" (click)="saveProject()">Guardar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST -->
+  <div class="toast-container" *ngIf="toastMessage">
+    <div class="toast">
+      <svg width="16" height="16" fill="none" stroke="#10b981" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+      </svg>
+      <span>{{ toastMessage }}</span>
+    </div>
+  </div>
+</ion-content>

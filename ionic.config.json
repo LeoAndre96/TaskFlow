@@ -1,0 +1,7 @@
+{
+  "name": "taskflow",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "angular-standalone"
+}

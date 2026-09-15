@@ -1,0 +1,159 @@
+<ion-content [fullscreen]="true">
+  <div class="recover-container">
+    
+    <!-- Botón Volver Atrás < -->
+    <button class="btn-back-arrow" (click)="goBack()" aria-label="Volver">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="19" y1="12" x2="5" y2="12"></line>
+        <polyline points="12 19 5 12 12 5"></polyline>
+      </svg>
+    </button>
+
+    <div class="recover-card">
+      
+      <!-- Ilustración del Candado Fiel al Mockup -->
+      <div class="lock-graphic-wrapper">
+        <div class="padlock-illustration">
+          <!-- Grillete de metal oscuro -->
+          <div class="padlock-shackle"></div>
+          <!-- Cuerpo dorado del candado -->
+          <div class="padlock-body">
+            <div class="padlock-keyhole">
+              <div class="keyhole-circle"></div>
+              <div class="keyhole-bar"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Alerta de Información / Código Generado -->
+      <div *ngIf="generatedCodeNotice && currentStep === 2" class="alert alert-info">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+        </svg>
+        <div>
+          <strong>Código dinámico generado:</strong>
+          <span class="code-pill">{{ code }}</span>
+          <small class="d-block">Se ha completado en la casilla para facilitar tu prueba.</small>
+        </div>
+      </div>
+
+      <!-- Alerta de Error -->
+      <div *ngIf="errorMessage" class="alert alert-error">
+        <svg width="18" height="18" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+        </svg>
+        <span>{{ errorMessage }}</span>
+      </div>
+
+      <!-- Alerta de Éxito -->
+      <div *ngIf="successMessage" class="alert alert-success">
+        <svg width="18" height="18" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+        </svg>
+        <span>{{ successMessage }}</span>
+      </div>
+
+      <!-- ==================== PASO 1: CORREO ==================== -->
+      <form *ngIf="currentStep === 1" class="recover-form" (ngSubmit)="onSubmitStep1()">
+        <div class="custom-input-box">
+          <div class="input-icon-slot">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="2" y="4" width="20" height="16" rx="2"></rect>
+              <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path>
+            </svg>
+          </div>
+          <div class="input-divider"></div>
+          <input 
+            type="email" 
+            name="email" 
+            [(ngModel)]="email" 
+            placeholder="Correo" 
+            required 
+            autocomplete="email"
+          />
+        </div>
+
+        <div class="button-wrapper">
+          <button type="submit" class="btn-recover-action" [disabled]="isLoading">
+            <span *ngIf="!isLoading">Recuperar contrseña</span>
+            <span *ngIf="isLoading">Enviando...</span>
+          </button>
+        </div>
+      </form>
+
+      <!-- ==================== PASO 2: CÓDIGO ==================== -->
+      <form *ngIf="currentStep === 2" class="recover-form" (ngSubmit)="onSubmitStep2()">
+        <div class="custom-input-box">
+          <div class="input-icon-slot">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+            </svg>
+          </div>
+          <div class="input-divider"></div>
+          <input 
+            type="text" 
+            name="code" 
+            [(ngModel)]="code" 
+            placeholder="Codigo" 
+            required 
+            maxlength="6"
+          />
+        </div>
+
+        <div class="button-wrapper">
+          <button type="submit" class="btn-recover-action" [disabled]="isLoading">
+            <span *ngIf="!isLoading">Recuperar</span>
+            <span *ngIf="isLoading">Validando...</span>
+          </button>
+        </div>
+      </form>
+
+      <!-- ==================== PASO 3: NUEVA CONTRASEÑA ==================== -->
+      <form *ngIf="currentStep === 3" class="recover-form" (ngSubmit)="onSubmitStep3()">
+        <div class="custom-input-box">
+          <div class="input-icon-slot">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="2" y="4" width="20" height="16" rx="2"></rect>
+              <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path>
+            </svg>
+          </div>
+          <div class="input-divider"></div>
+          <input 
+            type="password" 
+            name="newPassword" 
+            [(ngModel)]="newPassword" 
+            placeholder="Nueva contraseña" 
+            required 
+          />
+        </div>
+
+        <div class="custom-input-box">
+          <div class="input-icon-slot">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="2" y="4" width="20" height="16" rx="2"></rect>
+              <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path>
+            </svg>
+          </div>
+          <div class="input-divider"></div>
+          <input 
+            type="password" 
+            name="confirmPassword" 
+            [(ngModel)]="confirmPassword" 
+            placeholder="Confirmar contraseña" 
+            required 
+          />
+        </div>
+
+        <div class="button-wrapper">
+          <button type="submit" class="btn-recover-action" [disabled]="isLoading">
+            <span *ngIf="!isLoading">Restablecer</span>
+            <span *ngIf="isLoading">Guardando...</span>
+          </button>
+        </div>
+      </form>
+
+    </div>
+
+  </div>
+</ion-content>

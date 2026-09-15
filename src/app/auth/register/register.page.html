@@ -1,0 +1,150 @@
+<ion-content [fullscreen]="true">
+  <div class="register-container">
+    
+    <!-- Botón Volver Atrás < -->
+    <button class="btn-back-arrow" routerLink="/login" aria-label="Volver a Login">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="19" y1="12" x2="5" y2="12"></line>
+        <polyline points="12 19 5 12 12 5"></polyline>
+      </svg>
+    </button>
+
+    <div class="register-card">
+      <h1 class="register-header-title">Registrar usuario</h1>
+
+      <!-- Mensaje de Error -->
+      <div *ngIf="errorMessage" class="alert alert-error">
+        <svg width="18" height="18" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+        </svg>
+        <span>{{ errorMessage }}</span>
+      </div>
+
+      <!-- Mensaje de Éxito -->
+      <div *ngIf="successMessage" class="alert alert-success">
+        <svg width="18" height="18" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+        </svg>
+        <span>{{ successMessage }}</span>
+      </div>
+
+      <form class="register-form" (ngSubmit)="onRegister()">
+        <div class="form-grid-2cols">
+          
+          <!-- Columna 1 -->
+          <div class="grid-col">
+            <div class="form-group">
+              <label class="input-label">Nombres:</label>
+              <input 
+                type="text" 
+                class="form-control" 
+                name="nombres" 
+                [(ngModel)]="form.nombres" 
+                required 
+                placeholder="Ej. Juan Carlos"
+              />
+            </div>
+
+            <div class="form-group">
+              <label class="input-label">Correo:</label>
+              <input 
+                type="email" 
+                class="form-control" 
+                name="email" 
+                [(ngModel)]="form.email" 
+                required 
+                placeholder="ejemplo@taskflow.io"
+              />
+            </div>
+
+            <div class="form-group">
+              <label class="input-label">Username:</label>
+              <input 
+                type="text" 
+                class="form-control" 
+                name="username" 
+                [(ngModel)]="form.username" 
+                required 
+                placeholder="Ej. juancarlos"
+              />
+            </div>
+
+            <div class="form-group">
+              <label class="input-label">Contraseña:</label>
+              <input 
+                type="password" 
+                class="form-control" 
+                name="password" 
+                [(ngModel)]="form.password" 
+                required 
+                placeholder="Mínimo 6 caracteres"
+              />
+            </div>
+          </div>
+
+          <!-- Columna 2 -->
+          <div class="grid-col">
+            <div class="form-group">
+              <label class="input-label">Apellidos:</label>
+              <input 
+                type="text" 
+                class="form-control" 
+                name="apellidos" 
+                [(ngModel)]="form.apellidos" 
+                required 
+                placeholder="Ej. Pérez Gómez"
+              />
+            </div>
+
+            <div class="form-group">
+              <label class="input-label">Dni:</label>
+              <input 
+                type="text" 
+                class="form-control" 
+                name="dni" 
+                [(ngModel)]="form.dni" 
+                required 
+                maxlength="8" 
+                placeholder="8 dígitos"
+              />
+            </div>
+
+            <div class="form-group">
+              <label class="input-label">Telefono:</label>
+              <input 
+                type="tel" 
+                class="form-control" 
+                name="telefono" 
+                [(ngModel)]="form.telefono" 
+                required 
+                placeholder="+51 987654321"
+              />
+            </div>
+
+            <div class="form-group">
+              <label class="input-label">Repetir Contraseña:</label>
+              <input 
+                type="password" 
+                class="form-control" 
+                name="repetirPassword" 
+                [(ngModel)]="form.repetirPassword" 
+                required 
+                placeholder="Repita la contraseña"
+              />
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Botón Registrar -->
+        <div class="register-actions">
+          <button type="submit" class="btn-register-submit" [disabled]="isLoading">
+            <span *ngIf="!isLoading">Registrar</span>
+            <span *ngIf="isLoading">Guardando...</span>
+          </button>
+        </div>
+
+      </form>
+    </div>
+  </div>
+</ion-content>

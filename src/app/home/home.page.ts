@@ -1,0 +1,314 @@
+import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
+import { IonContent } from '@ionic/angular';
+import { TaskflowService } from '../services/taskflow.service';
+import { AuthService } from '../services/auth.service';
+import { AuthUser } from '../models/auth.model';
+import { User } from '../models/user.model';
+import { Task } from '../models/task.model';
+import { Project } from '../models/project.model';
+
+@Component({
+  selector: 'app-home',
+  templateUrl: 'home.page.html',
+  styleUrls: ['home.page.scss'],
+  standalone: true,
+  imports: [CommonModule, FormsModule, IonContent]
+})
+export class HomePage implements OnInit {
+  currentView: 'users' | 'tasks' | 'projects' | 'dashboard' = 'users';
+  searchQuery: string = '';
+  filterRole: string = 'all';
+  filterStatus: string = 'all';
+  mobileMenuOpen: boolean = false;
+
+  currentUser: AuthUser | null = null;
+  users: User[] = [];
+  tasks: Task[] = [];
+  projects: Project[] = [];
+
+  // Lista de roles predefinidos
+  rolesList: string[] = ['Admin', 'Product Owner', 'Scrum Master', 'Lead Developer', 'UX Designer', 'QA Engineer'];
+
+  // Estado de modales
+  showUserModal: boolean = false;
+  editingUser: User = { name: '', email: '', role: 'Lead Developer' };
+
+  showTaskModal: boolean = false;
+  editingTask: Task = { title: '', description: '', assignedUserId: null, assignedUserName: 'Sin asignar', assignedUserRole: '', status: 'Sin asignar' };
+
+  showProjectModal: boolean = false;
+  editingProject: Project = { name: '', description: '', status: 'En progreso', participantIds: [] };
+
+  toastMessage: string | null = null;
+
+  constructor(
+    private taskflowService: TaskflowService,
+    private authService: AuthService,
+    private router: Router
+  ) {}
+
+  ngOnInit() {
+    this.currentUser = this.authService.getCurrentUser();
+    this.authService.currentUser$.subscribe(u => this.currentUser = u);
+    this.loadData();
+  }
+
+  logout() {
+    this.authService.logout();
+    this.router.navigate(['/login']);
+  }
+
+  getUserDisplayName(): string {
+    if (this.currentUser) {
+      return `${this.currentUser.nombres} ${this.currentUser.apellidos}`.trim() || this.currentUser.username;
+    }
+    return 'Carlos Admin';
+  }
+
+  getUserInitials(): string {
+    if (this.currentUser) {
+      const n = (this.currentUser.nombres || '')[0] || '';
+      const a = (this.currentUser.apellidos || '')[0] || '';
+      return (n + a).toUpperCase() || 'US';
+    }
+    return 'CA';
+  }
+
+  loadData() {
+    this.taskflowService.getUsers().subscribe(data => this.users = data);
+    this.taskflowService.getTasks().subscribe(data => this.tasks = data);
+    this.taskflowService.getProjects().subscribe(data => this.projects = data);
+  }
+
+  switchView(view: 'users' | 'tasks' | 'projects' | 'dashboard') {
+    this.currentView = view;
+    this.searchQuery = '';
+    this.filterRole = 'all';
+    this.filterStatus = 'all';
+    this.mobileMenuOpen = false;
+  }
+
+  toggleMobileMenu() {
+    this.mobileMenuOpen = !this.mobileMenuOpen;
+  }
+
+  // ================= FILTROS =================
+  get filteredUsers(): User[] {
+    return this.users.filter(u => {
+      const q = this.searchQuery.toLowerCase();
+      const matchSearch = u.name.toLowerCase().includes(q) || u.role.toLowerCase().includes(q) || u.email.toLowerCase().includes(q);
+      const matchRole = this.filterRole === 'all' || u.role === this.filterRole;
+      return matchSearch && matchRole;
+    });
+  }
+
+  get filteredTasks(): Task[] {
+    return this.tasks.filter(t => {
+      const q = this.searchQuery.toLowerCase();
+      const matchSearch = t.title.toLowerCase().includes(q) || (t.assignedUserName && t.assignedUserName.toLowerCase().includes(q));
+      const matchStatus = this.filterStatus === 'all' || t.status === this.filterStatus;
+      const matchRole = this.filterRole === 'all' || t.assignedUserRole === this.filterRole;
+      return matchSearch && matchStatus && matchRole;
+    });
+  }
+
+  get filteredProjects(): Project[] {
+    return this.projects.filter(p => {
+      const q = this.searchQuery.toLowerCase();
+      return p.name.toLowerCase().includes(q) || p.description.toLowerCase().includes(q);
+    });
+  }
+
+  // ================= CRUD USUARIOS =================
+  openNewUserModal() {
+    this.editingUser = { name: '', email: '', role: 'Lead Developer' };
+    this.showUserModal = true;
+  }
+
+  editUser(user: User) {
+    this.editingUser = { ...user };
+    this.showUserModal = true;
+  }
+
+  saveUser() {
+    if (!this.editingUser.name || !this.editingUser.role) {
+      alert('Por favor ingresa el nombre y el rol');
+      return;
+    }
+    if (!this.editingUser.email) {
+      this.editingUser.email = `${this.editingUser.name.toLowerCase().replace(/\s+/g, '.')}@taskflow.io`;
+    }
+
+    this.taskflowService.saveUser(this.editingUser).subscribe(() => {
+      this.loadData();
+      this.showUserModal = false;
+      this.showToast(this.editingUser.id ? 'Usuario actualizado' : 'Usuario creado');
+    });
+  }
+
+  deleteUser(id?: number) {
+    if (!id) return;
+    if (confirm('¿Eliminar este usuario?')) {
+      this.taskflowService.deleteUser(id).subscribe(() => {
+        this.loadData();
+        this.showToast('Usuario eliminado');
+      });
+    }
+  }
+
+  // ================= CRUD TAREAS =================
+  openNewTaskModal() {
+    this.editingTask = { title: '', description: '', assignedUserId: null, assignedUserName: 'Sin asignar', assignedUserRole: '', status: 'Sin asignar' };
+    this.showTaskModal = true;
+  }
+
+  editTask(task: Task) {
+    this.editingTask = { ...task };
+    this.showTaskModal = true;
+  }
+
+  saveTask() {
+    if (!this.editingTask.title) {
+      alert('Por favor ingresa el título de la tarea');
+      return;
+    }
+
+    if (this.editingTask.assignedUserId) {
+      const user = this.users.find(u => u.id === Number(this.editingTask.assignedUserId));
+      this.editingTask.assignedUserName = user ? user.name : 'Sin asignar';
+      this.editingTask.assignedUserRole = user ? user.role : '';
+      if (this.editingTask.status === 'Sin asignar') {
+        this.editingTask.status = 'En curso';
+      }
+    } else {
+      this.editingTask.assignedUserName = 'Sin asignar';
+      this.editingTask.assignedUserRole = '';
+    }
+
+    this.taskflowService.saveTask(this.editingTask).subscribe(() => {
+      this.loadData();
+      this.showTaskModal = false;
+      this.showToast(this.editingTask.id ? 'Tarea actualizada' : 'Tarea creada');
+    });
+  }
+
+  deleteTask(id?: number) {
+    if (!id) return;
+    if (confirm('¿Eliminar esta tarea?')) {
+      this.taskflowService.deleteTask(id).subscribe(() => {
+        this.loadData();
+        this.showToast('Tarea eliminada');
+      });
+    }
+  }
+
+  toggleTaskStatus(task: Task) {
+    if (task.status === 'Sin asignar') {
+      task.status = 'En curso';
+    } else if (task.status === 'En curso') {
+      task.status = 'Finalizado';
+    } else {
+      task.status = 'Sin asignar';
+    }
+
+    this.taskflowService.saveTask(task).subscribe(() => {
+      this.loadData();
+      this.showToast(`Estado: ${task.status}`);
+    });
+  }
+
+  // Helper para obtener rol del usuario asignado
+  getUserRole(userId?: number | null): string {
+    if (!userId) return '';
+    const u = this.users.find(user => user.id === userId);
+    return u ? u.role : '';
+  }
+
+  // ================= CRUD PROYECTOS =================
+  openNewProjectModal() {
+    this.editingProject = { name: '', description: '', status: 'En progreso', participantIds: [] };
+    this.showProjectModal = true;
+  }
+
+  editProject(proj: Project) {
+    this.editingProject = { ...proj, participantIds: [...(proj.participantIds || [])] };
+    this.showProjectModal = true;
+  }
+
+  isParticipantSelected(userId?: number): boolean {
+    if (!userId) return false;
+    return this.editingProject.participantIds?.includes(userId) || false;
+  }
+
+  toggleParticipant(userId?: number) {
+    if (!userId) return;
+    if (!this.editingProject.participantIds) this.editingProject.participantIds = [];
+    const idx = this.editingProject.participantIds.indexOf(userId);
+    if (idx !== -1) {
+      this.editingProject.participantIds.splice(idx, 1);
+    } else {
+      this.editingProject.participantIds.push(userId);
+    }
+  }
+
+  saveProject() {
+    if (!this.editingProject.name) {
+      alert('Por favor ingresa el nombre del proyecto');
+      return;
+    }
+
+    this.taskflowService.saveProject(this.editingProject).subscribe(() => {
+      this.loadData();
+      this.showProjectModal = false;
+      this.showToast(this.editingProject.id ? 'Proyecto actualizado' : 'Proyecto creado');
+    });
+  }
+
+  deleteProject(id?: number) {
+    if (!id) return;
+    if (confirm('¿Eliminar este proyecto?')) {
+      this.taskflowService.deleteProject(id).subscribe(() => {
+        this.loadData();
+        this.showToast('Proyecto eliminado');
+      });
+    }
+  }
+
+  getParticipantList(participantIds: number[] = []): { name: string, role: string }[] {
+    return this.users
+      .filter(u => participantIds.includes(u.id || 0))
+      .map(u => ({ name: u.name, role: u.role }));
+  }
+
+  // ================= TOAST =================
+  showToast(msg: string) {
+    this.toastMessage = msg;
+    setTimeout(() => {
+      this.toastMessage = null;
+    }, 2500);
+  }
+
+  // Resumen métricas
+  get roleSummary(): string {
+    const counts: { [role: string]: number } = {};
+    this.filteredUsers.forEach(u => {
+      counts[u.role] = (counts[u.role] || 0) + 1;
+    });
+    return Object.entries(counts).map(([r, c]) => `${r}: ${c}`).join(' | ') || 'Ninguno';
+  }
+
+  get tasksInProgressCount(): number {
+    return this.tasks.filter(t => t.status === 'En curso').length;
+  }
+
+  get tasksCompletedCount(): number {
+    return this.tasks.filter(t => t.status === 'Finalizado').length;
+  }
+
+  get tasksUnassignedCount(): number {
+    return this.tasks.filter(t => t.status === 'Sin asignar').length;
+  }
+}
