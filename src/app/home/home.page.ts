@@ -355,7 +355,7 @@ export class HomePage implements OnInit {
     const pInProgress = this.taskInProgressPercentage;
     const endCompleted = pCompleted;
     const endInProgress = pCompleted + pInProgress;
-    return "conic-gradient(#10b981 0% " + endCompleted + "%, #22d3ee " + endCompleted + "% " + endInProgress + "%, #334155 " + endInProgress + "% 100%)";
+    return "conic-gradient(#10b981 0% " + endCompleted + "%, #22d3ee " + endCompleted + "% " + endInProgress + "%, #cbd5e1 " + endInProgress + "% 100%)";
   }
 
   get tasksByRole(): { role: string; count: number; percentage: number; color: string }[] {
