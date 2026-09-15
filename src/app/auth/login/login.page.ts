@@ -18,6 +18,8 @@ export class LoginPage {
   showPassword: boolean = false;
   errorMessage: string | null = null;
   isLoading: boolean = false;
+  submitted: boolean = false;
+  fieldErrors: { [key: string]: string } = {};
 
   constructor(
     private authService: AuthService,
@@ -28,11 +30,65 @@ export class LoginPage {
     this.showPassword = !this.showPassword;
   }
 
+  resetForm() {
+    this.identifier = '';
+    this.password = '';
+    this.fieldErrors = {};
+    this.submitted = false;
+    this.errorMessage = null;
+    this.showPassword = false;
+  }
+
+  ionViewWillLeave() {
+    this.resetForm();
+  }
+
+  ionViewWillEnter() {
+    this.resetForm();
+  }
+
+  ngOnDestroy() {
+    this.resetForm();
+  }
+
+  hasError(field: string): boolean {
+    return !!this.fieldErrors[field];
+  }
+
+  onFieldInput(field: string) {
+    if (this.submitted) {
+      this.validateField(field);
+    }
+  }
+
+  validateField(field: string): boolean {
+    delete this.fieldErrors[field];
+
+    if (field === 'identifier') {
+      if (!this.identifier.trim()) {
+        this.fieldErrors['identifier'] = 'Ingrese su correo o usuario.';
+      }
+    }
+
+    if (field === 'password') {
+      if (!this.password.trim()) {
+        this.fieldErrors['password'] = 'Ingrese su contraseña.';
+      }
+    }
+
+    return !this.fieldErrors[field];
+  }
+
   onLogin() {
     this.errorMessage = null;
+    this.submitted = true;
+    this.fieldErrors = {};
 
-    if (!this.identifier.trim() || !this.password.trim()) {
-      this.errorMessage = 'Por favor ingrese su correo/usuario y contraseña.';
+    const validId = this.validateField('identifier');
+    const validPass = this.validateField('password');
+
+    if (!validId || !validPass) {
+      this.errorMessage = 'Por favor complete los campos requeridos marcados en rojo.';
       return;
     }
 
@@ -41,13 +97,15 @@ export class LoginPage {
       identifier: this.identifier,
       password: this.password
     }).subscribe({
-      next: (user) => {
+      next: () => {
         this.isLoading = false;
         this.router.navigate(['/home']);
       },
       error: (err) => {
         this.isLoading = false;
         this.errorMessage = err.message || 'Error al iniciar sesión.';
+        this.fieldErrors['identifier'] = 'Verifique su correo/usuario.';
+        this.fieldErrors['password'] = 'Verifique su contraseña.';
       }
     });
   }
