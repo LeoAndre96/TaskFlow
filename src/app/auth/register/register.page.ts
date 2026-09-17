@@ -159,7 +159,12 @@ export class RegisterPage {
   sanitizeNumeric(event: Event, field: 'dni' | 'telefono') {
     const input = event.target as HTMLInputElement;
     const maxLength = field === 'dni' ? 8 : 9;
-    const sanitized = input.value.replace(/\D/g, '').slice(0, maxLength);
+    let sanitized = input.value.replace(/\D/g, '');
+    if (field === 'telefono' && sanitized.length > 0 && !sanitized.startsWith('9')) {
+      const idx = sanitized.indexOf('9');
+      sanitized = idx !== -1 ? sanitized.substring(idx) : '';
+    }
+    sanitized = sanitized.slice(0, maxLength);
     input.value = sanitized;
     this.form[field] = sanitized;
     if (this.submitted || this.touched[field]) {
@@ -222,7 +227,7 @@ export class RegisterPage {
         if (!this.form.telefono.trim()) {
           this.fieldErrors['telefono'] = 'El teléfono es obligatorio.';
         } else if (!/^\d{9}$/.test(this.form.telefono.trim())) {
-          this.fieldErrors['telefono'] = 'El teléfono debe tener exactamente 9 dígitos.';
+          this.fieldErrors['telefono'] = 'El teléfono debe iniciar con 9 y tener exactamente 9 dígitos.';
         }
         break;
 
